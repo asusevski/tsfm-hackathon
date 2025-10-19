@@ -1,99 +1,52 @@
-import Link from 'next/link';
-import { sql } from '@vercel/postgres';
+'use client';
 
-interface EloData {
-  id: number;
-  model_id: string;
-  team_name: string;
-  elo: number;
-  votes: number;
-}
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default async function DataTable() {
-  // Fetch data from Neon DB via Vercel Postgres
-  const { rows } = await sql<EloData>`SELECT * FROM elo_table ORDER BY elo DESC`;
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const router = useRouter();
 
-  // Map database fields to component props
-  const data = rows.map(row => ({
-    id: row.id,
-    modelId: row.model_id,
-    teamName: row.team_name,
-    elo: row.elo,
-    votes: row.votes,
-  }));
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Navigate to dashboard (leaderboard and voting)
+    router.push('/dashboard');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Tabs */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex space-x-8">
-            <Link
-              href="/"
-              className="px-3 py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600"
-            >
-              Leaderboard
-            </Link>
-            <Link
-              href="/voting"
-              className="px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
-            >
-              Start Voting
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            Welcome
+          </h1>
 
-      {/* Main Content */}
-      <div className="py-8 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h1 className="text-2xl font-semibold text-gray-800">Data Table</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {data.length} total records
-              </p>
+          <form onSubmit={handleLogin}>
+            <div className="mb-6">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                placeholder="Enter your email"
+                required
+              />
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Model ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Team Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ELO
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      # Votes
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {data.map((row) => (
-                    <tr key={row.modelId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {row.modelId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {row.teamName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {row.elo}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {row.votes.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:ring-4 focus:ring-blue-200"
+            >
+              Login
+            </button>
+          </form>
         </div>
       </div>
     </div>

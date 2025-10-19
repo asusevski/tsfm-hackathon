@@ -13,7 +13,7 @@ export default function BoxesPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex space-x-8">
             <Link
-              href="/"
+              href="/dashboard"
               className="px-3 py-4 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300"
             >
               Leaderboard
