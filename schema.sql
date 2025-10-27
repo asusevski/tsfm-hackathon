@@ -40,7 +40,6 @@ CREATE TABLE competitions (
     CHECK (submission_a_id <> submission_b_id)
 );
 
--- One vote per team per competition
 CREATE TABLE votes (
     competition_id INT NOT NULL REFERENCES competitions(competition_id) ON DELETE CASCADE,
     team_id INT NOT NULL REFERENCES teams(team_id) ON DELETE CASCADE,
@@ -59,20 +58,8 @@ CREATE TABLE elo_ratings (
 );
 
 -- ============================
---  Useful Indices
+--  ELO Update Function
 -- ============================
-
-CREATE INDEX idx_votes_team ON votes(team_id);
-CREATE INDEX idx_votes_competition ON votes(competition_id);
-CREATE INDEX idx_elo_rating ON elo_ratings(rating DESC);
-
--- ============================
---  Example ELO Update Function
--- ============================
-
--- Simple ELO formula: R' = R + K * (S - E)
--- S = actual score (1 win, 0.5 tie, 0 loss)
--- E = expected score (1 / (1 + 10^((R_opp - R_self)/400)))
 
 CREATE OR REPLACE FUNCTION update_elo(
     winner_team INT,
@@ -114,3 +101,52 @@ BEGIN
     WHERE team_id = loser_team;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ============================
+--  Trigger Auto ELO Update
+-- ============================
+
+CREATE OR REPLACE FUNCTION trigger_update_elo_on_vote()
+RETURNS TRIGGER AS $$
+DECLARE
+    sub_a_team INT;
+    sub_b_team INT;
+BEGIN
+    -- get team ids that competed against each other
+    SELECT s1.team_id, s2.team_id
+    INTO sub_a_team, sub_b_team
+    FROM competitions c
+    JOIN submissions s1 ON c.submission_a_id = s1.submission_id
+    JOIN submissions s2 ON c.submission_b_id = s2.submission_id
+    WHERE c.competition_id = NEW.competition_id;
+
+    -- update elo ratings based on vote result
+    IF NEW.vote_result = 1 THEN
+        PERFORM update_elo(sub_a_team, sub_b_team, FALSE);
+    ELSIF NEW.vote_result = -1 THEN
+        PERFORM update_elo(sub_b_team, sub_a_team, FALSE);
+    ELSE
+        PERFORM update_elo(sub_a_team, sub_b_team, TRUE);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================
+--  Trigger Declaration
+-- ============================
+
+CREATE TRIGGER trg_votes_elo_update
+AFTER INSERT ON votes
+FOR EACH ROW
+EXECUTE FUNCTION trigger_update_elo_on_vote();
+
+-- ============================
+--  Useful Indices
+-- ============================
+
+CREATE INDEX idx_votes_team ON votes(team_id);
+CREATE INDEX idx_votes_competition ON votes(competition_id);
+CREATE INDEX idx_elo_rating ON elo_ratings(rating DESC);
+
