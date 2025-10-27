@@ -11,7 +11,7 @@ interface EloData {
 
 export default async function DataTable() {
   // Fetch data from Neon DB via Vercel Postgres
-  const { rows } = await sql<EloData>`SELECT * FROM elo_table ORDER BY elo DESC`;
+  const { rows } = await sql<EloData>`SELECT * FROM elo_ratings ORDER BY rating DESC`;
 
   // Map database fields to component props
   const data = rows.map(row => ({
