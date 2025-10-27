@@ -22,6 +22,7 @@ CREATE TABLE prompts (
 CREATE TABLE completions (
     completion_id SERIAL PRIMARY KEY,
     prompt_id INT NOT NULL REFERENCES prompts(prompt_id) ON DELETE CASCADE,
+    team_id INT NOT NULL REFERENCES teams(team_id) ON DELETE CASCADE,
     text TEXT NOT NULL
 );
 
@@ -33,10 +34,12 @@ CREATE TABLE competitions (
     competition_id SERIAL PRIMARY KEY,
     submission_a_id INT NOT NULL REFERENCES submissions(submission_id) ON DELETE CASCADE,
     submission_b_id INT NOT NULL REFERENCES submissions(submission_id) ON DELETE CASCADE,
-    CONSTRAINT no_duplicate_pair UNIQUE (
-        LEAST(submission_a_id, submission_b_id),
-        GREATEST(submission_a_id, submission_b_id)
-    ),
+
+    -- enforce unique unordered pairs
+    submission_low  INT GENERATED ALWAYS AS (LEAST(submission_a_id, submission_b_id)) STORED,
+    submission_high INT GENERATED ALWAYS AS (GREATEST(submission_a_id, submission_b_id)) STORED,
+
+    CONSTRAINT unique_competition_pair UNIQUE (submission_low, submission_high),
     CHECK (submission_a_id <> submission_b_id)
 );
 
@@ -120,7 +123,6 @@ BEGIN
     JOIN submissions s2 ON c.submission_b_id = s2.submission_id
     WHERE c.competition_id = NEW.competition_id;
 
-    -- update elo ratings based on vote result
     IF NEW.vote_result = 1 THEN
         PERFORM update_elo(sub_a_team, sub_b_team, FALSE);
     ELSIF NEW.vote_result = -1 THEN
