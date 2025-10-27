@@ -16,6 +16,7 @@ export default function BoxesPage() {
   const [competition, setCompetition] = useState<Competition | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     async function fetchCompetition() {
@@ -35,6 +36,36 @@ export default function BoxesPage() {
 
     fetchCompetition();
   }, []);
+
+  const handleSubmitVote = async () => {
+    if (!selectedBox || !competition) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          competition_id: competition.competition_id,
+          selected_box: selectedBox,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit vote');
+      }
+
+      // Refresh the page to load new completions
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit vote');
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,15 +94,21 @@ export default function BoxesPage() {
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Choose a Box</h1>
 
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+              <p className="text-red-600 text-center">Error: {error}</p>
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center py-12">
               <p className="text-gray-600">Loading competition...</p>
             </div>
-          ) : error ? (
+          ) : !competition ? (
             <div className="text-center py-12">
-              <p className="text-red-600">Error: {error}</p>
+              <p className="text-red-600">No competitions available</p>
             </div>
-          ) : competition ? (
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Box 1 */}
               <button
@@ -107,7 +144,7 @@ export default function BoxesPage() {
                 </div>
               </button>
             </div>
-          ) : null}
+          )}
 
           {/* Selection Display */}
           {selectedBox && (
@@ -124,13 +161,11 @@ export default function BoxesPage() {
           {selectedBox && (
             <div className="mt-6 flex justify-center">
               <button
-                onClick={() => {
-                  // Handle vote submission here
-                  console.log('Submitting vote for:', selectedBox);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all"
+                onClick={handleSubmitVote}
+                disabled={submitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Submit Vote
+                {submitting ? 'Submitting...' : 'Submit Vote'}
               </button>
             </div>
           )}
