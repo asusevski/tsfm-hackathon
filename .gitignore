@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+.python-version
+uv.lock
+pyproject.toml
+populate_db_post.py
+populate_db_pre.py
