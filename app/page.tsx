@@ -43,8 +43,7 @@ export default function HomePage() {
                 HACKATHON
               </h2>
               <p className="text-lg text-white/60 mb-8 max-w-md">
-                Navigate the rugged terrain of machine learning. 
-                Each scroll reveals new perspectives of the loss landscape.
+              A week long hackathon to build, play and develop models from scratch.
               </p>
               <div className="text-sm text-white/40 uppercase tracking-wider">
                 Scroll to explore
@@ -67,9 +66,7 @@ export default function HomePage() {
                   of convergence, divergence, and the search for global minima.
                 </p>
                 <p className="text-lg leading-relaxed">
-                  As you scroll, witness different perspectives of the same landscape - 
-                  from bird's eye view to intimate close-ups, revealing the intricate 
-                  topology that challenges every algorithm.
+
                 </p>
               </div>
             </div>
@@ -81,42 +78,38 @@ export default function HomePage() {
           <div className="max-w-4xl">
             <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-8">
               <h2 className="text-5xl font-bold text-white mb-12">
-                Innovation
+                Topics
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
                   <div className="p-6">
-                    <h3 className="text-2xl font-bold text-white mb-4">Machine Learning</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4">Pre-training</h3>
                     <p className="text-white/70">
-                      State-of-the-art frameworks meet real-world complexity. 
-                      Navigate the optimization landscape with precision.
+         NA
                     </p>
                   </div>
                 </Card>
                 <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
                   <div className="p-6">
-                    <h3 className="text-2xl font-bold text-white mb-4">Data Science</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4">Post-training</h3>
                     <p className="text-white/70">
-                      Extract insights from the noise. Clean, process, and 
-                      transform data into actionable intelligence.
+                    NA
                     </p>
                   </div>
                 </Card>
                 <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
                   <div className="p-6">
-                    <h3 className="text-2xl font-bold text-white mb-4">AI Ethics</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4">Evaluation</h3>
                     <p className="text-white/70">
-                      Responsible development at every step. Consider bias, 
-                      fairness, and the broader impact of your solutions.
+                    NA
                     </p>
                   </div>
                 </Card>
                 <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
                   <div className="p-6">
-                    <h3 className="text-2xl font-bold text-white mb-4">Innovation</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4">Inference</h3>
                     <p className="text-white/70">
-                      Push boundaries. Create novel approaches that redefine 
-                      what's possible in machine learning.
+NA
                     </p>
                   </div>
                 </Card>

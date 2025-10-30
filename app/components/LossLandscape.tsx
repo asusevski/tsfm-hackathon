@@ -14,7 +14,7 @@ function LossSurface() {
   
   // Generate fixed rugged loss landscape geometry
   const geometry = useMemo(() => {
-    const width = 60;
+    const width = 65;
     const height = 60;
     const widthSegments = 150;
     const heightSegments = 150;
@@ -62,7 +62,8 @@ function LossSurface() {
   
   useFrame((state) => {
     if (meshRef.current) {
-      // Subtle rotation for visual interest
+      // Rotate the landscape 180 degrees around Z-axis to make it horizontal
+      meshRef.current.rotation.x = (Math.PI) / 1.2; // 90 degrees around X-axis
       meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.1) * 0.05;
     }
   });
@@ -99,7 +100,7 @@ function LossLandscape3D({ scrollProgress }: LossLandscapeProps) {
     <Canvas
       camera={{ 
         position: cameraPosition, 
-        fov: 45 + scrollProgress * 15 // FOV changes with scroll
+        fov: 45 + scrollProgress * 25 // FOV changes with scroll
       }}
       style={{ width: '100%', height: '100vh' }}
     >
