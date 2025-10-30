@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LossLandscape3D from './components/LossLandscape';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,6 @@ import { Card } from '@/components/ui/card';
 
 export default function HomePage() {
   const [scrollProgress, setScrollProgress] = useState(0);
-  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -171,7 +169,7 @@ NA
                   className="bg-white text-black hover:bg-white/90 text-lg px-8 py-6 rounded-xl font-bold"
                   asChild
                 >
-                  <Link href="/dashboard">
+                  <Link href="/chat">
                     Enter Competition
                   </Link>
                 </Button>

@@ -39,10 +39,10 @@ export default async function DataTable() {
               Leaderboard
             </Link>
             <Link
-              href="/voting"
+              href="/chat"
               className="px-3 py-4 text-sm font-medium text-white/60 hover:text-white border-b-2 border-transparent hover:border-white/30 transition-colors backdrop-blur-sm"
             >
-              Start Voting
+              Team Chat
             </Link>
           </div>
         </div>
