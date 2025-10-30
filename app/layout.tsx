@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TSFM Hackathon - Machine Learning Competition",
   description: "Join the TSFM Hackathon and explore the evolution of machine learning through interactive 3D loss landscapes. Compete, innovate, and push the boundaries of AI.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({

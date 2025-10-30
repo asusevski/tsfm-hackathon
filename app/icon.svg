@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#08080d"/>
+      <stop offset="50%" stop-color="#101022"/>
+      <stop offset="100%" stop-color="#141730"/>
+    </linearGradient>
+    <linearGradient id="landscape" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3ddad8"/>
+      <stop offset="50%" stop-color="#738bff"/>
+      <stop offset="100%" stop-color="#c067ff"/>
+    </linearGradient>
+    <linearGradient id="ridge" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1bafd1" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#9f6bff" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#7b8bff" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+
+  <path d="M8 46 L18 36 L26 40 L35 28 L44 38 L56 32 L56 54 L8 54 Z" fill="url(#landscape)" filter="url(#glow)"/>
+  <path d="M18 36 L26 40 L35 28 L44 38" fill="none" stroke="url(#ridge)" stroke-width="3" stroke-linecap="round"/>
+
+  <circle cx="35" cy="28" r="4" fill="#e6f6ff" opacity="0.85"/>
+  <circle cx="18" cy="36" r="2.8" fill="#d2f0ff" opacity="0.8"/>
+  <circle cx="44" cy="38" r="2.8" fill="#f3d8ff" opacity="0.8"/>
+</svg>
