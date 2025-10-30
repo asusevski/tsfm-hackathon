@@ -106,6 +106,17 @@ export default function ChatPage() {
   };
 
   const getModelDescription = (team: Team) => {
+    const descriptions: Record<number, string> = {
+      1: 'This mock endpoint responds to you like someone from SF',
+      2: 'A grumpy responder that ignores your prompt and always fires back with "whutzzittoya?".',
+      3: 'A Blue Jays superfan bot that yells "GO BLUE JAYS!!" no matter what you say.',
+    };
+
+    if (descriptions[team.team_id]) {
+      const description = descriptions[team.team_id];
+      return team.endpoint_url ? `${description} Live at ${team.endpoint_url}.` : description;
+    }
+
     if (team.endpoint_url) {
       return `This model is live and reachable at ${team.endpoint_url}.`;
     }
