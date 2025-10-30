@@ -1,183 +1,181 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type MouseEvent
+} from 'react';
 
 interface FloatingText {
   id: string;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
+  xPercent: number;
+  yPercent: number;
   text: string;
   size: number;
   rotation: number;
   opacity: number;
-  age: number;
+  duration: number;
+  delay: number;
+  floatX: number;
+  floatY: number;
 }
 
 const TSFM_VARIANTS = [
-'TSFM', 'tsfm', 'toronto', 'attention', 'decode', 'prefill', 'spec','infer', 'gqa', 'mqa', 'rl', 'distributed', 'kv'
+  'TSFM',
+  'tsfm',
+  'toronto',
+  'attention',
+  'decode',
+  'prefill',
+  'spec',
+  'infer',
+  'gqa',
+  'mqa',
+  'rl',
+  'distributed',
+  'kv'
 ];
+
+const INITIAL_TEXT_COUNT = 15;
+const MAX_TEXT_COUNT = 40;
+
+const createRandomText = (
+  id: string,
+  overrides: Partial<Pick<FloatingText, 'xPercent' | 'yPercent'>> = {}
+): FloatingText => {
+  const floatDistance = 20 + Math.random() * 40;
+  const floatAngle = Math.random() * Math.PI * 2;
+
+  return {
+    id,
+    xPercent: overrides.xPercent ?? Math.random() * 80 + 10,
+    yPercent: overrides.yPercent ?? Math.random() * 80 + 10,
+    text: TSFM_VARIANTS[Math.floor(Math.random() * TSFM_VARIANTS.length)],
+    size: Math.random() * 24 + 20,
+    rotation: Math.random() * 40 - 20,
+    opacity: Math.random() * 0.4 + 0.6,
+    duration: Math.random() * 12 + 18,
+    delay: Math.random() * 6,
+    floatX: Math.cos(floatAngle) * floatDistance,
+    floatY: Math.sin(floatAngle) * floatDistance
+  };
+};
 
 export default function FloatingTSFM() {
   const [texts, setTexts] = useState<FloatingText[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const createRandomText = (id: string): FloatingText => {
-    return {
-      id,
-      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800),
-      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 600),
-      vx: (Math.random() - 0.5) * 3,
-      vy: (Math.random() - 0.5) * 3,
-      text: TSFM_VARIANTS[Math.floor(Math.random() * TSFM_VARIANTS.length)],
-      size: Math.random() * 30 + 25,
-      rotation: Math.random() * 360,
-      opacity: Math.random() * 0.4 + 0.6,
-      age: 0
-    };
-  };
-
-  // Initialize texts
   useEffect(() => {
-    const initialTexts: FloatingText[] = [];
-    const textCount = 15;
-    
-    for (let i = 0; i < textCount; i++) {
-      initialTexts.push(createRandomText(`text-${i}`));
-    }
-    
+    const initialTexts = Array.from(
+      { length: INITIAL_TEXT_COUNT },
+      (_, index) => createRandomText(`text-${index}`)
+    );
     setTexts(initialTexts);
   }, []);
 
-  // Animation loop
-  useEffect(() => {
-    const animate = () => {
-      setTexts(prevTexts => {
-        return prevTexts.map(text => {
-          let newX = text.x + text.vx;
-          let newY = text.y + text.vy;
-          let newVx = text.vx;
-          let newVy = text.vy;
-
-          // Bounce off walls
-          if (newX <= 0 || newX >= window.innerWidth) {
-            newVx = -newVx;
-            newX = Math.max(0, Math.min(window.innerWidth, newX));
-          }
-          if (newY <= 0 || newY >= window.innerHeight) {
-            newVy = -newVy;
-            newY = Math.max(0, Math.min(window.innerHeight, newY));
-          }
-
-          // Remove stochastic movement for linear motion
-          // No random velocity changes
-
-          // Limit velocity
-          const maxSpeed = 3;
-          const speed = Math.sqrt(newVx * newVx + newVy * newVy);
-          if (speed > maxSpeed) {
-            newVx = (newVx / speed) * maxSpeed;
-            newVy = (newVy / speed) * maxSpeed;
-          }
-
-          // Keep rotation static for linear movement
-          const newRotation = text.rotation;
-
-          // Update age and fade out old texts
-          const newAge = text.age + 16;
-          const newOpacity = Math.max(0.1, text.opacity - (newAge > 30000 ? 0.001 : 0));
-
-          return {
-            ...text,
-            x: newX,
-            y: newY,
-            vx: newVx,
-            vy: newVy,
-            rotation: newRotation,
-            opacity: newOpacity,
-            age: newAge
-          };
-        }).filter(text => text.opacity > 0.1);
-      });
-    };
-
-    const interval = setInterval(animate, 33); // ~30fps for good balance
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Find clicked text
-    const clickedText = texts.find(text => {
-      const distance = Math.sqrt(Math.pow(x - text.x, 2) + Math.pow(y - text.y, 2));
-      return distance <= text.size;
-    });
-    
-    if (clickedText) {
-      // Create two new texts near the clicked one
-      const newTexts = [
-        createRandomText(`text-${Date.now()}-1`),
-        createRandomText(`text-${Date.now()}-2`)
+
+    const xPercent = Math.min(
+      95,
+      Math.max(5, ((event.clientX - rect.left) / rect.width) * 100)
+    );
+    const yPercent = Math.min(
+      95,
+      Math.max(5, ((event.clientY - rect.top) / rect.height) * 100)
+    );
+
+    setTexts(prevTexts => {
+      const nextTexts = [
+        ...prevTexts,
+        createRandomText(`text-${Date.now()}`, { xPercent, yPercent })
       ];
-      
-      // Position them near the clicked text
-      newTexts.forEach((newText) => {
-        newText.x = clickedText.x + (Math.random() - 0.5) * 100;
-        newText.y = clickedText.y + (Math.random() - 0.5) * 100;
-        newText.vx = (Math.random() - 0.5) * 4;
-        newText.vy = (Math.random() - 0.5) * 4;
-        newText.opacity = 0.8;
-      });
-      
-      setTexts(prevTexts => [...prevTexts, ...newTexts]);
-    } else {
-      // Clicked on empty space, create a new text at click position
-      const newText = createRandomText(`text-${Date.now()}`);
-      newText.x = x;
-      newText.y = y;
-      newText.vx = (Math.random() - 0.5) * 4;
-      newText.vy = (Math.random() - 0.5) * 4;
-      newText.opacity = 0.8;
-      
-      setTexts(prevTexts => [...prevTexts, newText]);
-    }
+      return nextTexts.length > MAX_TEXT_COUNT
+        ? nextTexts.slice(nextTexts.length - MAX_TEXT_COUNT)
+        : nextTexts;
+    });
   };
 
   return (
     <div
       ref={containerRef}
       onClick={handleClick}
-      className="fixed inset-0 w-full h-full pointer-events-auto cursor-pointer"
+      className="floating-field"
       style={{ zIndex: 1 }}
     >
-      {texts.map(text => (
-        <div
-          key={text.id}
-          style={{
-            position: 'absolute',
-            left: text.x,
-            top: text.y,
-            fontSize: `${text.size}px`,
-            opacity: text.opacity,
-            transform: `rotate(${text.rotation}deg)`,
-            pointerEvents: 'none',
-            userSelect: 'none',
-            textShadow: '0 0 10px rgba(255, 255, 255, 0.3)',
-            willChange: 'transform',
-            color: 'white',
-            fontWeight: 'bold',
-            fontFamily: 'monospace'
-          }}
-        >
-          {text.text}
-        </div>
-      ))}
+      {texts.map(text => {
+        const wrapperStyle: CSSProperties = {
+          left: `${text.xPercent}%`,
+          top: `${text.yPercent}%`,
+          opacity: text.opacity
+        };
+
+        const contentStyle: CSSProperties & {
+          '--float-x': string;
+          '--float-y': string;
+          '--rotation': string;
+        } = {
+          fontSize: `${text.size}px`,
+          animationDuration: `${text.duration}s`,
+          animationDelay: `${text.delay}s`,
+          '--float-x': `${text.floatX}px`,
+          '--float-y': `${text.floatY}px`,
+          '--rotation': `${text.rotation}deg`
+        };
+
+        return (
+          <div key={text.id} className="floating-text" style={wrapperStyle}>
+            <span className="floating-text-content" style={contentStyle}>
+              {text.text}
+            </span>
+          </div>
+        );
+      })}
+
+      <style jsx>{`
+        .floating-field {
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: auto;
+          cursor: pointer;
+        }
+
+        .floating-text {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+        }
+
+        .floating-text-content {
+          display: inline-block;
+          color: white;
+          font-weight: bold;
+          font-family: monospace;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+          will-change: transform;
+          user-select: none;
+          animation-name: float;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          animation-direction: alternate;
+          pointer-events: none;
+        }
+
+        @keyframes float {
+          0% {
+            transform: translate3d(0, 0, 0) rotate(var(--rotation));
+          }
+          100% {
+            transform: translate3d(var(--float-x), var(--float-y), 0)
+              rotate(var(--rotation));
+          }
+        }
+      `}</style>
     </div>
   );
 }
