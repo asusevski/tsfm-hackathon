@@ -121,12 +121,6 @@ export default function ChatPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex space-x-8">
             <Link
-              href="/dashboard"
-              className="px-3 py-4 text-sm font-medium text-white/60 hover:text-white border-b-2 border-transparent hover:border-white/30 transition-colors backdrop-blur-sm"
-            >
-              Visual Field
-            </Link>
-            <Link
               href="/chat"
               className="px-3 py-4 text-sm font-medium text-white border-b-2 border-slate-400 backdrop-blur-sm"
             >

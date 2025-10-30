@@ -12,8 +12,8 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to dashboard (leaderboard and voting)
-    router.push('/dashboard');
+    // Navigate directly to the team chat once authenticated
+    router.push('/chat');
   };
 
   return (

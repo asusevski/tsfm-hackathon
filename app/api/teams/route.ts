@@ -1,24 +1,23 @@
-import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  try {
-    const result = await sql`
-      SELECT
-        t.team_id,
-        t.team_name,
-        s.link as endpoint_url
-      FROM teams t
-      LEFT JOIN submissions s ON t.team_id = s.team_id
-      ORDER BY t.team_name ASC
-    `;
+  const teams = [
+    {
+      team_id: 1,
+      team_name: 'Team Alpha',
+      endpoint_url: 'https://mock.team-alpha.dev/generate',
+    },
+    {
+      team_id: 2,
+      team_name: 'Team Beta',
+      endpoint_url: 'https://mock.team-beta.dev/generate',
+    },
+    {
+      team_id: 3,
+      team_name: 'Team Gamma',
+      endpoint_url: 'https://mock.team-gamma.dev/generate',
+    },
+  ];
 
-    return NextResponse.json({ teams: result.rows });
-  } catch (error) {
-    console.error('Error fetching teams:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch teams' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({ teams });
 }
