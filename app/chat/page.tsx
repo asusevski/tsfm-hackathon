@@ -20,6 +20,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'chat' | 'catalog'>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch teams on mount
@@ -102,6 +103,14 @@ export default function ChatPage() {
     }
   };
 
+  const getModelDescription = (team: Team) => {
+    if (team.endpoint_url) {
+      return `This model is live and reachable at ${team.endpoint_url}.`;
+    }
+
+    return 'This team has not published a model description yet. Check back soon!';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
       {/* Header */}
@@ -122,147 +131,241 @@ export default function ChatPage() {
               </p>
             </div>
           </div>
+          <div className="mt-6">
+            <div className="inline-flex rounded-full bg-slate-100 p-1 shadow-inner">
+              <button
+                type="button"
+                onClick={() => setActiveTab('chat')}
+                className={`px-5 py-2 text-sm font-medium rounded-full transition-all ${
+                  activeTab === 'chat'
+                    ? 'bg-white text-blue-600 shadow'
+                    : 'text-slate-500 hover:text-blue-500'
+                }`}
+              >
+                Chat
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('catalog')}
+                className={`px-5 py-2 text-sm font-medium rounded-full transition-all ${
+                  activeTab === 'catalog'
+                    ? 'bg-white text-blue-600 shadow'
+                    : 'text-slate-500 hover:text-blue-500'
+                }`}
+              >
+                Model Catalog
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Team Selector */}
-      <div className="bg-white/70 backdrop-blur-lg border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex-1">
-              <label htmlFor="team-selector" className="block text-sm font-medium text-gray-700 mb-2">
-                Select a team
-              </label>
-              <select
-                id="team-selector"
-                value={selectedTeamId ?? ''}
-                onChange={(e) => setSelectedTeamId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-900 shadow-sm"
-              >
-                <option value="">Choose a team</option>
-                {teams.map((team) => (
-                  <option key={team.team_id} value={team.team_id}>
-                    {team.team_name}
-                    {!team.endpoint_url && ' (No submission)'}
-                  </option>
-                ))}
-              </select>
-              {selectedTeam && selectedTeam.endpoint_url && (
-                <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-xs font-medium text-green-700">
-                    ✓ Endpoint: {selectedTeam.endpoint_url}
+      {activeTab === 'chat' && (
+        <>
+          {/* Team Selector */}
+          <div className="bg-white/70 backdrop-blur-lg border-b border-gray-200">
+            <div className="max-w-5xl mx-auto px-6 py-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex-1">
+                  <label htmlFor="team-selector" className="block text-sm font-medium text-gray-700 mb-2">
+                    Select a team
+                  </label>
+                  <select
+                    id="team-selector"
+                    value={selectedTeamId ?? ''}
+                    onChange={(e) => setSelectedTeamId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white text-gray-900 shadow-sm"
+                  >
+                    <option value="">Choose a team</option>
+                    {teams.map((team) => (
+                      <option key={team.team_id} value={team.team_id}>
+                        {team.team_name}
+                        {!team.endpoint_url && ' (No submission)'}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedTeam && selectedTeam.endpoint_url && (
+                    <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs font-medium text-green-700">
+                        ✓ Endpoint: {selectedTeam.endpoint_url}
+                      </p>
+                    </div>
+                  )}
+                  {selectedTeam && !selectedTeam.endpoint_url && (
+                    <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                      <p className="text-xs font-medium text-amber-700">
+                        ⚠ This team has not submitted an endpoint yet
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto px-6 py-8">
+              {messages.length === 0 ? (
+                <div className="text-center mt-20">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mb-4">
+                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 text-lg font-medium">
+                    {selectedTeamId
+                      ? 'Start a conversation by typing a message below'
+                      : 'Select a team to start chatting'}
                   </p>
                 </div>
-              )}
-              {selectedTeam && !selectedTeam.endpoint_url && (
-                <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs font-medium text-amber-700">
-                    ⚠ This team has not submitted an endpoint yet
-                  </p>
+              ) : (
+                <div className="space-y-4">
+                  {messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${
+                        msg.role === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[75%] px-5 py-3.5 rounded-2xl shadow-md transition-all hover:shadow-lg ${
+                          msg.role === 'user'
+                            ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white'
+                            : 'bg-white border border-gray-200 text-gray-800'
+                        }`}
+                      >
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[75%] px-5 py-3.5 rounded-2xl bg-white border border-gray-200 shadow-md">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          </div>
+                          <p className="text-sm text-gray-500 ml-1">Thinking...</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          {messages.length === 0 ? (
-            <div className="text-center mt-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50/80 backdrop-blur-sm border-t border-red-200 shadow-sm">
+              <div className="max-w-5xl mx-auto px-6 py-3">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-sm font-medium text-red-700">Error: {error}</p>
+                </div>
               </div>
-              <p className="text-gray-600 text-lg font-medium">
-                {selectedTeamId
-                  ? 'Start a conversation by typing a message below'
-                  : 'Select a team to start chatting'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${
-                    msg.role === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-[75%] px-5 py-3.5 rounded-2xl shadow-md transition-all hover:shadow-lg ${
-                      msg.role === 'user'
-                        ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white'
-                        : 'bg-white border border-gray-200 text-gray-800'
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[75%] px-5 py-3.5 rounded-2xl bg-white border border-gray-200 shadow-md">
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                      <p className="text-sm text-gray-500 ml-1">Thinking...</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border-t border-red-200 shadow-sm">
-          <div className="max-w-5xl mx-auto px-6 py-3">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <p className="text-sm font-medium text-red-700">Error: {error}</p>
+          {/* Input Area */}
+          <div className="bg-white/80 backdrop-blur-md border-t border-gray-200 shadow-2xl">
+            <div className="max-w-5xl mx-auto px-6 py-5">
+              <div className="flex gap-3">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder={
+                    selectedTeamId
+                      ? 'Type your message... (Press Enter to send)'
+                      : 'Select a team first'
+                  }
+                  disabled={!selectedTeamId || loading}
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none disabled:bg-gray-50 disabled:text-gray-400 transition-all bg-white text-gray-900 shadow-sm"
+                  rows={2}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!selectedTeamId || !input.trim() || loading}
+                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:transform-none"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'catalog' && (
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-800">Explore the hackathon models</h2>
+              <p className="text-sm text-gray-500 mt-2">
+                Browse each team&apos;s submission and jump straight into a conversation.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {teams.length === 0 ? (
+                <div className="sm:col-span-2">
+                  <div className="p-8 bg-white border border-dashed border-gray-300 rounded-2xl text-center">
+                    <p className="text-sm text-gray-500">Team information is loading. Please check back shortly.</p>
+                  </div>
+                </div>
+              ) : (
+                teams.map((team) => (
+                  <div
+                    key={team.team_id}
+                    className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex flex-col gap-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{team.team_name}</h3>
+                        <p className="text-xs text-gray-400 mt-1">Team #{team.team_id}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        team.endpoint_url ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {team.endpoint_url ? 'Live' : 'Coming Soon'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{getModelDescription(team)}</p>
+                    <div className="mt-auto flex flex-wrap gap-2">
+                      {team.endpoint_url && (
+                        <a
+                          href={team.endpoint_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition"
+                        >
+                          View Endpoint
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTeamId(team.team_id);
+                          setActiveTab('chat');
+                        }}
+                        className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm transition"
+                      >
+                        Chat with this model
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       )}
-
-      {/* Input Area */}
-      <div className="bg-white/80 backdrop-blur-md border-t border-gray-200 shadow-2xl">
-        <div className="max-w-5xl mx-auto px-6 py-5">
-          <div className="flex gap-3">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder={
-                selectedTeamId
-                  ? 'Type your message... (Press Enter to send)'
-                  : 'Select a team first'
-              }
-              disabled={!selectedTeamId || loading}
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none disabled:bg-gray-50 disabled:text-gray-400 transition-all bg-white text-gray-900 shadow-sm"
-              rows={2}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!selectedTeamId || !input.trim() || loading}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:transform-none"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
