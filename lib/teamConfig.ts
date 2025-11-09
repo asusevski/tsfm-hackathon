@@ -35,6 +35,7 @@ export const TEAM_CONFIG: TeamModelConfig[] = [
     teamName: 'LazyLLM',
     modelName: 'Rashik',
     url: 'https://rashikshahjahan--nanochat-modal-chat-web-dev.modal.run/generate'
+  }
 ];
 
 const TEAM_CONFIG_BY_ID = TEAM_CONFIG.reduce<Record<number, TeamModelConfig>>(
