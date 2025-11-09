@@ -112,32 +112,15 @@ export default function ChatPage() {
   };
 
   const getModelDescription = (team: Team) => {
-    const descriptions: Record<number, string> = {
-      1: 'This mock endpoint responds to you like someone from SF',
-      2: 'A grumpy responder that ignores your prompt and always fires back with "whutzzittoya?".',
-      3: 'A Blue Jays superfan bot that yells "GO BLUE JAYS!!" no matter what you say.',
-    };
+    const ownerPart = team.model_name
+      ? `${team.model_name} deployed by ${team.team_name}.`
+      : `${team.team_name} has not published a model name yet.`;
 
-    const descriptorParts: string[] = [];
-    const description = descriptions[team.team_id];
+    const endpointPart = team.endpoint_url
+      ? `Live endpoint: ${team.endpoint_url}.`
+      : 'Endpoint pending submission.';
 
-    if (description) {
-      descriptorParts.push(description);
-    } else if (team.endpoint_url) {
-      descriptorParts.push(`This model is live and reachable at ${team.endpoint_url}.`);
-    } else {
-      descriptorParts.push('This team has not published a model description yet. Check back soon!');
-    }
-
-    if (team.model_name) {
-      descriptorParts.push(`Model: ${team.model_name}.`);
-    }
-
-    if (team.endpoint_url && description) {
-      descriptorParts.push(`Live at ${team.endpoint_url}.`);
-    }
-
-    return descriptorParts.join(' ');
+    return `${ownerPart} ${endpointPart}`;
   };
 
   return (
