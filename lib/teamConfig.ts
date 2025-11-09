@@ -28,7 +28,7 @@ export const TEAM_CONFIG: TeamModelConfig[] = [
     teamId: 4,
     teamName: 'gpt2',
     modelName: 'gpt2',
-    url: 'https://modal.com/apps/asusevski/main/deployed/text-generation-api/generate',
+    url: 'https://asusevski--text-generation-api-web.modal.run/generate'
   },
 ];
 
