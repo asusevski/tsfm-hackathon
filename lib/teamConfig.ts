@@ -30,6 +30,11 @@ export const TEAM_CONFIG: TeamModelConfig[] = [
     modelName: 'gpt2',
     url: 'https://asusevski--text-generation-api-web.modal.run/generate'
   },
+  {
+    teamId: 5,
+    teamName: 'LazyLLM',
+    modelName: 'Rashik',
+    url: 'https://rashikshahjahan--nanochat-modal-chat-web-dev.modal.run/generate'
 ];
 
 const TEAM_CONFIG_BY_ID = TEAM_CONFIG.reduce<Record<number, TeamModelConfig>>(
