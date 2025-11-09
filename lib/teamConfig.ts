@@ -16,7 +16,7 @@ export const TEAM_CONFIG: TeamModelConfig[] = [
     teamId: 2,
     teamName: 'TinyBirdStories',
     modelName: 'Piotr Goral',
-    url: 'https://piotrek-grl--nanochat-tinybirdstories-chat-web.modal.run/',
+    url: 'https://piotrek-grl--nanochat-tinybirdstories-chat-web.modal.run/generate',
   },
   {
     teamId: 3,
