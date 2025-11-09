@@ -8,11 +8,14 @@ interface Team {
   team_id: number;
   team_name: string;
   endpoint_url: string | null;
+  model_name?: string | null;
 }
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  teamName?: string;
+  modelName?: string;
 }
 
 export default function ChatPage() {
@@ -46,9 +49,10 @@ export default function ChatPage() {
   const selectedTeam = teams.find(t => t.team_id === selectedTeamId);
 
   const handleSendMessage = async () => {
-    if (!input.trim() || !selectedTeamId || loading) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput || !selectedTeamId || loading) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: trimmedInput, teamName: 'You' };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
@@ -60,7 +64,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           teamId: selectedTeamId,
-          prompt: input,
+          prompt: trimmedInput,
         }),
       });
 
@@ -88,6 +92,8 @@ export default function ChatPage() {
       const assistantMessage: Message = {
         role: 'assistant',
         content: assistantContent,
+        teamName: data.teamName ?? selectedTeam?.team_name,
+        modelName: data.modelName ?? data.teamName ?? selectedTeam?.team_name,
       };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
@@ -112,16 +118,26 @@ export default function ChatPage() {
       3: 'A Blue Jays superfan bot that yells "GO BLUE JAYS!!" no matter what you say.',
     };
 
-    if (descriptions[team.team_id]) {
-      const description = descriptions[team.team_id];
-      return team.endpoint_url ? `${description} Live at ${team.endpoint_url}.` : description;
+    const descriptorParts: string[] = [];
+    const description = descriptions[team.team_id];
+
+    if (description) {
+      descriptorParts.push(description);
+    } else if (team.endpoint_url) {
+      descriptorParts.push(`This model is live and reachable at ${team.endpoint_url}.`);
+    } else {
+      descriptorParts.push('This team has not published a model description yet. Check back soon!');
     }
 
-    if (team.endpoint_url) {
-      return `This model is live and reachable at ${team.endpoint_url}.`;
+    if (team.model_name) {
+      descriptorParts.push(`Model: ${team.model_name}.`);
     }
 
-    return 'This team has not published a model description yet. Check back soon!';
+    if (team.endpoint_url && description) {
+      descriptorParts.push(`Live at ${team.endpoint_url}.`);
+    }
+
+    return descriptorParts.join(' ');
   };
 
   return (
@@ -203,10 +219,16 @@ export default function ChatPage() {
                   {teams.map((team) => (
                     <option key={team.team_id} value={team.team_id} className="text-black">
                       {team.team_name}
+                      {team.model_name ? ` — ${team.model_name}` : ''}
                       {!team.endpoint_url && ' (No submission)'}
                     </option>
                   ))}
                 </select>
+                {selectedTeam && selectedTeam.model_name && (
+                  <div className="mt-3 rounded-lg border border-sky-400/30 bg-sky-400/10 px-3 py-2 text-xs font-medium text-sky-100">
+                    Model: {selectedTeam.model_name}
+                  </div>
+                )}
                 {selectedTeam && selectedTeam.endpoint_url && (
                   <div className="mt-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs font-medium text-emerald-200">
                     ✓ Endpoint: {selectedTeam.endpoint_url}
@@ -248,7 +270,19 @@ export default function ChatPage() {
                                 : 'bg-white/10 text-white/90 border border-white/10'
                             }`}
                           >
+                            <p
+                              className={`mb-2 text-[10px] font-semibold uppercase tracking-wide ${
+                                msg.role === 'user' ? 'text-white/70' : 'text-white/60'
+                              }`}
+                            >
+                              {msg.role === 'user' ? 'You' : msg.teamName ?? 'Assistant'}
+                            </p>
                             <p className="whitespace-pre-wrap">{msg.content}</p>
+                            {msg.role === 'assistant' && (
+                              <p className="mt-3 text-[11px] uppercase tracking-wide text-white/40">
+                                Model: {msg.modelName ?? msg.teamName ?? 'Unavailable'}
+                              </p>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -329,6 +363,9 @@ export default function ChatPage() {
                         <div>
                           <h3 className="text-lg font-semibold text-white">{team.team_name}</h3>
                           <p className="mt-1 text-xs text-white/40">Team #{team.team_id}</p>
+                          {team.model_name && (
+                            <p className="mt-1 text-xs text-white/60">Model: {team.model_name}</p>
+                          )}
                         </div>
                         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
                           team.endpoint_url ? 'bg-emerald-400/20 text-emerald-100 border border-emerald-300/40' : 'bg-amber-400/20 text-amber-100 border border-amber-300/40'

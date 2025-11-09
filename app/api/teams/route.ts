@@ -1,23 +1,13 @@
 import { NextResponse } from 'next/server';
+import { TEAM_CONFIG } from '@/lib/teamConfig';
 
 export async function GET() {
-  const teams = [
-    {
-      team_id: 1,
-      team_name: 'Team Alpha',
-      endpoint_url: 'https://mock.team-alpha.dev/generate',
-    },
-    {
-      team_id: 2,
-      team_name: 'Team Beta',
-      endpoint_url: 'https://mock.team-beta.dev/generate',
-    },
-    {
-      team_id: 3,
-      team_name: 'Team Gamma',
-      endpoint_url: 'https://mock.team-gamma.dev/generate',
-    },
-  ];
+  const teams = TEAM_CONFIG.map((team) => ({
+    team_id: team.teamId,
+    team_name: team.teamName,
+    model_name: team.modelName ?? null,
+    endpoint_url: team.url,
+  }));
 
   return NextResponse.json({ teams });
 }
